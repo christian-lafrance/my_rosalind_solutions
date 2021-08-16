@@ -1,0 +1,58 @@
+# Reads in a text file containing UniProt Protein Database access ID's, acquires the amino acid sequences from the UniProt database 
+# and returns all locations of a desired motif, if present.
+
+from urllib.request import urlopen                   
+import re
+
+
+# Gets the fasta file from Uniprot.
+def get_seqs(Uniprot_IDs):
+    
+    protein_seqs = []
+    
+    for ID in Uniprot_IDs:                                      
+        URL = 'http://www.uniprot.org/uniprot/' + ID + '.fasta'
+        data = urlopen(URL)                                       
+        fasta = data.read().decode('utf-8', 'ignore').replace('/n', '')
+        protein_pattern = '[A-Z]+'
+        protein_seq = re.findall(protein_pattern, fasta)
+        
+        seq =''
+        for match in protein_seq:
+            if len(match) > 5:
+                seq += match
+        
+        protein_seqs.append(seq)
+        
+    return protein_seqs
+        
+
+# Finds the desired motif in each sequence and, if it exists, returns the indices and protein ID.
+def find_motif(ID, seq, motif):
+                      
+    indices = ''
+    matches = re.findall(motif, seq)
+    if matches:
+        for match in matches:
+            indices += '{} '.format(seq.index(match)+1)
+                
+    if len(indices) > 0:
+        return '{}\n{}'.format(ID, indices)
+
+
+def main():
+
+    motif = '(?=(N[^P][ST][^P]))'   # N-glycosylation motif
+                                                       
+    with open(r'C:/Users/chris/Downloads/practice.txt', 'r') as file:
+        read_in = file.read().strip()                             
+        Uniprot_IDs = read_in.split('\n')
+                                                                                            
+    protein_seqs = get_seqs(Uniprot_IDs)     
+        
+    for i,_ in enumerate(Uniprot_IDs):
+        print(find_motif(Uniprot_IDs[i], protein_seqs[i], motif))
+    
+
+if __name__ == '__main__':
+    main()
