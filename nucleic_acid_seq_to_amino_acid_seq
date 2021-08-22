@@ -47,7 +47,7 @@ def translate(RNA):
 
 
 def main():
-    with open (r'C:/Users/chris/Downloads/practice.txt', 'r') as file:
+    with open (r'file_location/file.txt', 'r') as file:
         NA_seq = file.readline().strip()
 
     if 'U' in NA_seq:
