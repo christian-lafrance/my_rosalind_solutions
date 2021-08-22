@@ -1,0 +1,46 @@
+# reads in a list of "(k+1)-mers" separated by /n and returns their corresponding De Bruijn Graph as an adjacency list of kmers. 
+# Will write tuples to a file representing the nodes (kmers) that are connected by an edge. 
+# The kmers in each tuple (representing an edge) will have an overlap length of k-1. 
+
+
+# Returns the reverse compliment of a sequence. 
+def comps(seq):
+    key = {'A':'T', 'T':'A', 'C':'G', 'G':'C'}
+    
+    reverse_compliment = ''
+    
+    for nuc in seq:
+        reverse_compliment += key[nuc]
+    
+    return reverse_compliment[::-1]
+    
+# constructs the De Bruijn Graph as a tuble representing two nodes connected by an edge (adjacency list).  
+def graph(seqs):
+    
+    dna = []
+  
+    # adding compliments to list of seqs
+    for seq in seqs:
+        if seq not in dna:
+            dna.append(seq)
+        comp = comps(seq)
+        if comp not in dna:
+            dna.append(comp)
+    
+    ans = []
+    
+    for seq in dna: 
+        ans.append('({}, {})'.format(seq[:-1], seq[1:]))
+
+    return sorted(set(ans))             
+    
+def main():
+    with open(r'file_location/file.txt', 'r') as file:
+        temp_read = file.read()
+        reads = temp_read.split('\n')
+        
+    with open(r'file_location/de_bruijn_graph.txt', 'w') as answer:
+        answer.write("\n".join(graph(reads)))
+        
+if __name__ == "__main__":
+    main()
