@@ -1,0 +1,66 @@
+# reads in sequencing reads in FASTA format separated by /n and writes corrected reads to a new file. 
+# errors are assumed to be a single nucleotide error with a Hamming distance of 1 with respect to the correct read. 
+# a read is considered to have an error if it occurs in the data set only once (including reverse compliments). 
+
+import re
+
+# returns the reverse compliment of a sequence. 
+def reverse(seq):
+    code = {'A':'T', 'T':'A', 'G':'C', 'C':'G'}
+    
+
+    comp = ''
+    for na in seq:
+        comp += code[na]
+    return comp[::-1]
+    
+# returns the corrected read in the following format:
+# read_containing_error->corrected_read
+def read_correction(seqs):
+    
+    comps = []
+    for seq in seqs:
+        comps.append(reverse(seq))
+        
+    bad_seqs = []
+    good_seqs = []
+    
+    for i, seq in enumerate(seqs):
+        if seq not in seqs[:i] and seq not in seqs[i+1:]:
+            if seq not in comps:
+                bad_seqs.append(seq)
+            else:
+                good_seqs.append(seq)
+                
+        else:
+            good_seqs.append(seq)
+                
+    ans = []
+    check = 0
+    for seq in bad_seqs:
+        for good_seq in good_seqs:
+            count = 0
+            for i, na in enumerate(good_seq):
+                if seq[i] == good_seq[i]:
+                    continue
+                else:
+                    count += 1
+            if count == 1:
+                check += 1
+                ans.append('{}->{}'.format(seq, good_seq))
+    answer = set(ans)
+    
+    return '\n'.join(answer)
+
+
+def main():
+    with open(r'file_path/file.txt', 'r') as file:
+        reads = file.read().replace('\n', "")
+        pattern = r'[ATGC]+'
+        seqs = re.findall(pattern, reads)
+
+    with open(r'file_path/answer_file.txt', 'w') as answer:
+        answer.write(read_correction(seqs))
+      
+if __name__ == '__main__':
+    main()
