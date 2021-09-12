@@ -1,0 +1,46 @@
+# reads in two strings and returns the longest common superstring of the two strings using a dynamic programming approach which 
+# builds a matrix with dimensions based on the length of the two strings. The matrix is populated with numbers representing
+# the shortest subsequence up to that point. These numbers are then used to reconstruct the supersequence by working
+# backwards through the matrix. 
+
+
+def find_scs(seqs):
+    m, n = len(seqs[0]), len(seqs[1])
+    
+    # build matrix with dimensions of length of strings.
+    matrix = [[0]*(n+1) for i in range(m+1)]
+    
+    # populate matrix with lengths of superstrings up to that point. These will be used to reconstruct the superstring using indices later. 
+    for i in range(m+1):
+        for j in range(n+1):
+            if i==0 or j==0:
+                matrix[i][j] = 0 # first row and column will be all zeros. 
+            elif seqs[0][i-1] == seqs[1][j-1]: # if characters are the same, populate matrix with the index of the character. Start with i, j = 1. 
+                matrix[i][j] = matrix[i-1][j-1]+1
+            else:
+                matrix[i][j] = max(matrix[i-1][j], matrix[i][j-1]) # if not same, choose larger index above or left of current index in the matrix. 
+
+    # work backwards through matrix to build the superstring.
+    sup_string = "" # this will be in reverse order. 
+    i, j = m, n
+    while (i>0 or j>0):
+        if matrix[i][j] == matrix[i-1][j]:
+            i -= 1
+            sup_string += seqs[0][i]
+        elif matrix[i][j] == matrix[i][j-1]:
+            j -= 1
+            sup_string += seqs[1][j]
+        else:
+            sup_string += seqs[0][i-1]
+            i -= 1
+            j -= 1
+    return sup_string[::-1] # return superstring in correct orientation.
+
+def main():
+    with open("rosalind_scsp (1).txt", "r") as file:
+        seqs = file.read().split('\n')
+        
+    print(find_scs(seqs))
+
+if __name__ == "__main__":
+    main()
