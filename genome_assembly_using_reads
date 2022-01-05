@@ -1,0 +1,81 @@
+'''
+This program reads in a collection of error-free reads of equal length, separates them by \n
+and returns A cyclic superstring of minimal length containing every read or its reverse complement.
+I found this problem particularly difficult to wrap my head around so it is heavily annotated. 
+
+example input: 
+AATCT
+TGTAA
+GATTA
+ACAGA
+
+result: TCTGTAA
+'''
+
+# add reverse compliments to to list of seqs.
+def rc(seqs):
+    code = {'A':'T', 'T':'A', 'C':'G', 'G':'C'}
+    ans = []
+    for seq in seqs:
+        ans.append(seq)
+        rev_comp = ''
+        for na in seq:
+            rev_comp += code[na]
+        ans.append(rev_comp[::-1])
+        
+    return ans
+
+
+def assemble(seqs):
+
+    l = len(seqs[0])  # assumes all strings are the same length
+    
+    # find best size for kmers. Will try to assemble the sequence starting from
+    # the largest kmer. If this does not result in a solution, kmer reduces in
+    # size by 1 until a solution is reached.
+    for k in range(l-1, 1, -1):
+        
+        # creat a dictionary representing adjacency list, with the left kmer
+        # as the key and the right kmer as the value. 
+        adj_dict = {}
+        for seq in seqs:
+            for i in range(l-k):
+                adj_dict[seq[i:i+k]] = seq[i+1:i+k+1]
+
+        first = km1mer = seqs[0][:k] #begin with first left k-1mer
+        superstring = ''
+     
+        while True:
+            if km1mer in adj_dict:
+
+                # if the k-1mer is present in the dict, this means there is a k-1
+                # overlap, add last base of right kmer to extend the 
+                # superstring, then use that k-1mer as the key for the next value
+                superstring += km1mer[-1]
+                km1mer = adj_dict[km1mer]
+                
+                # when the current k-1mer is equal to the first, the entire cycle is
+                # completed. Return the full sequence.
+                if km1mer == first:
+                    return superstring
+            else:
+                
+                # a solution was not reached with the current kmer size,
+                # move to the next kmer size.
+                break
+    
+
+def main():
+    
+    # read in sequences and create a list by splitting on \n.
+    with open(r'rosalind_gasm (1).txt', 'r') as file:
+        reads = file.read().splitlines()
+        
+    # add reverse compliments to list of sequences
+    seqs = rc(reads)
+
+    print(assemble(seqs))
+    
+
+if __name__ == '__main__':    
+    main()
