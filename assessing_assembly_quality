@@ -1,0 +1,61 @@
+'''
+Problem:
+Given a collection of DNA strings representing contigs, we use the N statistic NXX (where XX ranges from 01 to 99) 
+to represent the maximum positive integer L such that the total number of nucleotides of all contigs having length ≥L 
+is at least XX% of the sum of contig lengths. The most commonly used such statistic is N50, although N75 is also 
+worth mentioning.
+
+Given: A collection of at most 1000 DNA strings (whose combined length does not exceed 50 kbp).
+
+Return: N50 and N75 for this collection of strings.
+'''
+def assess(reads):
+    
+    total = 0 
+    lens = [] 
+    ans = []
+    
+    # calculate total length of all reads.
+    # create a list of all read lengths. 
+    for read in reads:
+        l = len(read)
+        total += l
+        lens.append(l)
+
+    # sort this list of read lengths in descending order.
+    sorted_lens = sorted(lens, reverse=True)
+    
+    i = 0
+    N50 = 0.5 * total
+    N75 = 0.75 * total
+    
+    # iterate over descending list of read lengths, summing all
+    # lengths. When a sum is > or = N50 or N75, the length
+    # is appended to the answer list. 
+    while True:
+        current = sum(sorted_lens[0:i+1])
+        if current >= N50 and current <= N75 and len(ans)==0:
+            ans.append(sorted_lens[i])
+            
+        elif current >= N75:
+            ans.append(sorted_lens[i])
+            break
+        
+        if i == len(sorted_lens):
+            return None
+        
+        i += 1
+      
+    return ans
+
+def main():
+    
+    # read in file and split on \n.
+    with open(r'rosalind_asmq.txt', 'r') as file:
+        reads = file.read().splitlines()
+        
+        print(assess(reads))
+
+if __name__ == '__main__':
+    main()
+
